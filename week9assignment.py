@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 
-# Product class
 @dataclass
 class Product:
     name: str
@@ -10,8 +9,6 @@ class Product:
     def value(self) -> float:
         return self.price * self.quantity
 
-
-# Warehouse class
 @dataclass
 class Warehouse:
     name: str
@@ -21,7 +18,6 @@ class Warehouse:
     def __post_init__(self):
         self._refresh()
 
-    # helper method
     def _refresh(self):
         self.total_value = sum(p.value() for p in self.products)
 
