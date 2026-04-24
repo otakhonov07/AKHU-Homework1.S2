@@ -5,87 +5,77 @@ class ExamError(Exception):
 
 class StudentAlreadyRegisteredError(ExamError):
     def __init__(self, name):
-        error_text = ""
-        error_text = error_text + "student already registered: "
-        error_text = error_text + str(name)
-        super().__init__(error_text)
+        e_txt = ""
+        e_txt = e_txt + "student already registered: "
+        e_txt = e_txt + str(name)
+        super().__init__(e_txt)
         self.name = name
 
 class StudentNotRegisteredError(ExamError):
     def __init__(self, name):
-        error_text = ""
-        part1 = "student not registered: "
-        error_text = part1 + name
-        super().__init__(error_text)
+        e_txt = "student not registered: " + name
+        super().__init__(e_txt)
         self.name = name
 
 class InvalidAnswerError(ExamError):
-    def __init__(self, question_num, valid_options):
-        error_text = "invalid answer for question "
-        error_text = error_text + str(question_num)
-        error_text = error_text + ". valid options: "
-        error_text = error_text + str(valid_options)
-        super().__init__(error_text)
-        self.question_num = question_num
-        self.valid_options = valid_options
+    def __init__(self, qn, vo):
+        e_txt = "invalid answer for question " + str(qn)
+        e_txt = e_txt + ". valid options: " + str(vo)
+        super().__init__(e_txt)
+        self.qn = qn
+        self.vo = vo
 
 class ExamGrader:
     def __init__(self, answer_key):
-        self.answerKey = answer_key
-        self.submissions = dict()
+        self.ans_key = answer_key
+        self.db = {}
 
     def register_student(self, name):
-        if name in self.submissions:
+        if name in self.db:
             raise StudentAlreadyRegisteredError(name)
-        else:
-            self.submissions[name] = {}
-        return
+        self.db[name] = {}
 
     def submit_answer(self, name, question_num, answer):
         try:
-            student_data = self.submissions[name]
+            stu_dat = self.db[name]
         except:
             raise StudentNotRegisteredError(name) from None
 
-        temp_key = self.answerKey
+        ak = self.ans_key
 
-        if question_num not in temp_key:
-            keys_list = []
-            for k in temp_key:
-                keys_list.append(k)
-            raise InvalidAnswerError(question_num, keys_list)
+        if question_num not in ak:
+            v_list = []
+            for k in ak:
+                v_list.append(k)
+            raise InvalidAnswerError(question_num, v_list)
 
-        if name not in self.submissions:
-            self.submissions[name] = {}
+        if name not in self.db:
+            self.db[name] = {}
 
-        self.submissions[name][question_num] = answer
+        self.db[name][question_num] = answer
 
     def grade(self, name):
         try:
-            answers = self.submissions[name]
+            ans_map = self.db[name]
         except:
             raise StudentNotRegisteredError(name) from None
+            
+        corr = 0
+        tot = len(self.ans_key)
 
-        correct = 0
-        total = len(self.answerKey)
+        for q in self.ans_key:
+            corr_ans = self.ans_key[q]
 
-        for q in self.answerKey:
-            correct_answer = self.answerKey[q]
+            if q in ans_map:
+                if ans_map[q] == corr_ans:
+                    corr = corr + 1
 
-            if q in answers:
-                if answers[q] == correct_answer:
-                    correct = correct + 1
-                else:
-                    pass
-            else:
-                pass
-
-        if len(answers) == 0:
+        if len(ans_map) == 0:
             return 0
 
-        score = (correct / total) * 100
-        final_score = int(score)
-        return final_score
+        sc = (corr / tot) * 100
+        fin_sc = int(sc)
+        return fin_sc
 
 key = {1: "B", 2: "A", 3: "C", 4: "D"}
 grader = ExamGrader(key)
